@@ -200,6 +200,12 @@ impl Ingestor {
             .or(rec.starting_balance.as_deref())
             .unwrap_or("");
         let Some(stroops) = amount::to_stroops(amount_str) else {
+            // Never credit an approximation: surface the unparseable amount (no customer data).
+            tracing::warn!(
+                op_id = %rec.id,
+                amount = ?amount_str,
+                "skipping payment: amount is not a valid Stellar amount (≤ 7 decimals)"
+            );
             return Ok(Processed::Skipped);
         };
         if stroops <= 0 {

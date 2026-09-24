@@ -1885,12 +1885,14 @@ impl Store {
         status: &str,
         attempts: i32,
         response_code: Option<i32>,
+        response_body_snippet: Option<&str>,
     ) -> Result<Uuid, StoreError> {
         let id: Uuid = sqlx::query_scalar(
             r#"
             INSERT INTO webhook_deliveries
-                (endpoint_id, event_type, payload, status, attempts, response_code)
-            VALUES ($1, $2, $3, $4, $5, $6)
+                (endpoint_id, event_type, payload, status, attempts, response_code,
+                 response_body_snippet)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id
             "#,
         )
@@ -1900,6 +1902,7 @@ impl Store {
         .bind(status)
         .bind(attempts)
         .bind(response_code)
+        .bind(response_body_snippet)
         .fetch_one(&self.pool)
         .await?;
         Ok(id)
